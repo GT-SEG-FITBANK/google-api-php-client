@@ -37,16 +37,16 @@ jobs:
 
       - name: Verify CycloneDX Installation
         run: |
-          ls -l vendor/bin/
-          if [ ! -f vendor/bin/cyclonedx-php-composer ]; then
-            echo "❌ CycloneDX binary not found! Exiting..."
+          composer show cyclonedx/cyclonedx-php-composer
+          if ! composer CycloneDX:make-sbom composer.json --help > /dev/null 2>&1; then
+            echo "❌ CycloneDX command not found! Exiting..."
             exit 1
           fi
 
       - name: Generate SBOM (JSON and XML)
         run: |
-          vendor/bin/cyclonedx-php-composer make-sbom -o sbom.json
-          vendor/bin/cyclonedx-php-composer make-sbom --format xml -o sbom.xml
+          composer CycloneDX:make-sbom composer.json --output-file sbom.json
+          composer CycloneDX:make-sbom composer.json --output-format xml --output-file sbom.xml
 
       - name: Configure Git for Pushing to Another Repository
         run: |
