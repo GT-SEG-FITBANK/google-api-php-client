@@ -1,4 +1,4 @@
-name: Generate SBOM with CycloneDX
+name: Generate SBOM with CycloneDX for PHP
 
 on:
   push:
@@ -9,26 +9,41 @@ on:
 jobs:
   generate-sbom:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ "8.0", "8.1", "8.2", "8.3", "8.4" ]
+        composer-flags: [""]
+        include:
+          - php: "8.0"
+            composer-flags: "--prefer-lowest"
+          - php: "8.4"
+            composer-flags: "--prefer-lowest"
+    name: PHP ${{ matrix.php }} ${{ matrix.composer-flags }} SBOM Generation
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup PHP and Install Dependencies
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: ${{ matrix.php }}
           tools: composer
 
-      - name: Install Composer Dependencies
-        run: composer install --no-progress --no-suggest --prefer-dist
+      - name: Install Dependencies
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: composer update ${{ matrix.composer-flags }}
 
       - name: Install CycloneDX-Composer
         run: composer require --dev cyclonedx/cyclonedx-php-composer
 
       - name: Generate SBOM (JSON and XML)
         run: |
-          vendor/bin/cyclonedx-php-composer make-sbom -o sbom.json
-          vendor/bin/cyclonedx-php-composer make-sbom --format xml -o sbom.xml
+          vendor/bin/cyclonedx-php-composer make-sbom -o sbom-${{ matrix.php }}.json
+          vendor/bin/cyclonedx-php-composer make-sbom --format xml -o sbom-${{ matrix.php }}.xml
 
       - name: Configure Git for Pushing to Another Repository
         run: |
@@ -38,9 +53,9 @@ jobs:
       - name: Clone the Target Repository
         run: |
           git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO_DESTINO.git target-repo
-          cp sbom.json sbom.xml target-repo/
+          cp sbom-${{ matrix.php }}.json sbom-${{ matrix.php }}.xml target-repo/
           cd target-repo
           git checkout -b sbom-update || git checkout sbom-update
-          git add sbom.json sbom.xml
-          git commit -m "Update SBOM files [Automated]"
+          git add sbom-${{ matrix.php }}.json sbom-${{ matrix.php }}.xml
+          git commit -m "Update SBOM for PHP ${{ matrix.php }} [Automated]"
           git push https://SEU_PERSONAL_ACCESS_TOKEN@github.com/SEU_USUARIO/SEU_REPOSITORIO_DESTINO.git sbom-update
