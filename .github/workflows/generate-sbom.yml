@@ -55,10 +55,10 @@ jobs:
 
       - name: Clone the Target Repository
         run: |
-          git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO_DESTINO.git target-repo
+          git clone https://github.com/GT-SEG-FITBANK/SBOM.git target-repo
           cp sbom.json sbom.xml target-repo/
           cd target-repo
           git checkout -b sbom-update || git checkout sbom-update
           git add sbom.json sbom.xml
           git commit -m "Update SBOM for PHP 8.0 [Automated]"
-          git push https://SEU_PERSONAL_ACCESS_TOKEN@github.com/SEU_USUARIO/SEU_REPOSITORIO_DESTINO.git sbom-update
+          git push https://SEU_PERSONAL_ACCESS_TOKEN@github.com/Shttps://github.com/GT-SEG-FITBANK/SBOM.git sbom-update
