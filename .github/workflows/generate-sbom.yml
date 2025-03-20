@@ -1,0 +1,46 @@
+name: Generate SBOM with CycloneDX
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP and Install Dependencies
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer
+
+      - name: Install Composer Dependencies
+        run: composer install --no-progress --no-suggest --prefer-dist
+
+      - name: Install CycloneDX-Composer
+        run: composer require --dev cyclonedx/cyclonedx-php-composer
+
+      - name: Generate SBOM (JSON and XML)
+        run: |
+          vendor/bin/cyclonedx-php-composer make-sbom -o sbom.json
+          vendor/bin/cyclonedx-php-composer make-sbom --format xml -o sbom.xml
+
+      - name: Configure Git for Pushing to Another Repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Clone the Target Repository
+        run: |
+          git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO_DESTINO.git target-repo
+          cp sbom.json sbom.xml target-repo/
+          cd target-repo
+          git checkout -b sbom-update || git checkout sbom-update
+          git add sbom.json sbom.xml
+          git commit -m "Update SBOM files [Automated]"
+          git push https://SEU_PERSONAL_ACCESS_TOKEN@github.com/SEU_USUARIO/SEU_REPOSITORIO_DESTINO.git sbom-update
