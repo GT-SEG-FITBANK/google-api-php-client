@@ -25,13 +25,23 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: composer update --prefer-lowest
+          command: composer update --prefer-lowest --no-progress --no-scripts
 
       - name: Allow Composer Plugin
         run: composer config --no-plugins allow-plugins.cyclonedx/cyclonedx-php-composer true
 
       - name: Install CycloneDX-Composer
-        run: composer require --dev cyclonedx/cyclonedx-php-composer
+        run: |
+          composer require --dev cyclonedx/cyclonedx-php-composer
+          composer install --no-progress --no-scripts
+
+      - name: Verify CycloneDX Installation
+        run: |
+          ls -l vendor/bin/
+          if [ ! -f vendor/bin/cyclonedx-php-composer ]; then
+            echo "❌ CycloneDX binary not found! Exiting..."
+            exit 1
+          fi
 
       - name: Generate SBOM (JSON and XML)
         run: |
