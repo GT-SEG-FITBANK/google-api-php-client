@@ -62,3 +62,4 @@ jobs:
           git add sbom.json sbom.xml
           git commit -m "Update SBOM for PHP 8.0 [Automated]"
           git push https://oauth2:${{ secrets.SEU_PERSONAL_ACCESS_TOKEN }}@github.com/GT-SEG-FITBANK/SBOM.git sbom-update
+        
