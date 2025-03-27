@@ -30,21 +30,26 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress
 
+      - name: Install PHP Quality Tools
+        run: |
+          composer global require phpstan/phpstan friendsofphp/php-cs-fixer squizlabs/php_codesniffer
+          echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
+
       # PHPStan
       - name: Run PHPStan
         run: |
           if [ ! -f phpstan.neon ]; then
-            ./vendor/bin/phpstan analyse src --level=max
+            phpstan analyse src --level=max
           else
-            ./vendor/bin/phpstan analyse
+            phpstan analyse
           fi
 
       # PHP-CS-Fixer
       - name: Run PHP-CS-Fixer
         run: |
-          ./vendor/bin/php-cs-fixer fix --dry-run --diff
+          php-cs-fixer fix --dry-run --diff
 
       # PHP_CodeSniffer
       - name: Run PHP_CodeSniffer (PHPCS)
         run: |
-          ./vendor/bin/phpcs --standard=PSR12 src
+          phpcs --standard=PSR12 src
