@@ -1,0 +1,43 @@
+name: Run Psalm Static Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  psalm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, xml, ctype, json, tokenizer, dom, curl, pdo_mysql
+
+      - name: Install Composer
+        run: |
+          curl -sS https://getcomposer.org/installer | php
+          sudo mv composer.phar /usr/local/bin/composer
+
+      - name: Install Psalm globally
+        run: composer global require vimeo/psalm
+
+      - name: Add Composer global bin to PATH
+        run: echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
+
+      - name: Create psalm.xml (se não existir)
+        run: |
+          if [ ! -f psalm.xml ]; then
+            ~/.composer/vendor/bin/psalm --init --level=3
+          fi
+
+      - name: Run Psalm analysis
+        run: ~/.composer/vendor/bin/psalm --output-format=github
