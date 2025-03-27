@@ -5,47 +5,55 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
-  static-analysis:
+  phpstan:
     runs-on: ubuntu-latest
-
+    name: 🔍 PHPStan Static Analysis
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up PHP
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
-          extensions: mbstring, xml, ctype, json, tokenizer, dom, curl, pdo_mysql
 
-      - name: Install Composer
-        run: |
-          curl -sS https://getcomposer.org/installer | php
-          sudo mv composer.phar /usr/local/bin/composer
-
-      - name: Install Composer dependencies
+      - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Install PHP Quality Tools
+      - name: Install PHPStan
         run: |
-          composer global require phpstan/phpstan friendsofphp/php-cs-fixer squizlabs/php_codesniffer
+          composer global require phpstan/phpstan
           echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
 
-      # PHPStan
       - name: Run PHPStan
         run: |
           if [ ! -f phpstan.neon ]; then
             phpstan analyse src --level=max || true
           else
             phpstan analyse || true
-          fi      
+          fi
 
-      # PHP-CS-Fixer com relatório HTML
-      - name: Run PHP-CS-Fixer and generate report
+  phpcsfixer:
+    runs-on: ubuntu-latest
+    name: 🧼 PHP-CS-Fixer Style Check
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Install PHP-CS-Fixer
+        run: |
+          composer global require friendsofphp/php-cs-fixer
+          echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
+
+      - name: Run PHP-CS-Fixer (dry-run)
         run: |
           php-cs-fixer fix src \
             --dry-run \
@@ -53,9 +61,25 @@ jobs:
             --rules='@PSR12,array_syntax=>{"syntax":"short"},no_unused_imports,single_quote,strict_comparison,strict_param' \
             || true
 
-      
+  phpcs:
+    runs-on: ubuntu-latest
+    name: 🧪 PHP_CodeSniffer Check
+    steps:
+      - uses: actions/checkout@v3
 
-      # PHP_CodeSniffer
-      - name: Run PHP_CodeSniffer (PHPCS)
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Install PHP_CodeSniffer
+        run: |
+          composer global require squizlabs/php_codesniffer
+          echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
+
+      - name: Run PHP_CodeSniffer
         run: |
           phpcs --standard=PSR12 src || true
