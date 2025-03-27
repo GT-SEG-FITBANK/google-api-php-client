@@ -36,7 +36,7 @@ jobs:
       - name: Create psalm.xml (se não existir)
         run: |
           if [ ! -f psalm.xml ]; then
-            ~/.composer/vendor/bin/psalm --init"
+            ~/.composer/vendor/bin/psalm --init
           fi
 
       - name: Adjust Psalm level (opcional)
