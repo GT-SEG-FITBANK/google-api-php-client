@@ -27,6 +27,9 @@ jobs:
           curl -sS https://getcomposer.org/installer | php
           sudo mv composer.phar /usr/local/bin/composer
 
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist
+
       - name: Install Psalm globally
         run: composer global require vimeo/psalm
 
@@ -44,4 +47,4 @@ jobs:
           sed -i 's/level="1"/level="3"/' psalm.xml
 
       - name: Run Psalm analysis
-        run: ~/.composer/vendor/bin/psalm --output-format=github
+        run: psalm --output-format=github
