@@ -1,0 +1,50 @@
+name: PHP Quality Tools
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, xml, ctype, json, tokenizer, dom, curl, pdo_mysql
+
+      - name: Install Composer
+        run: |
+          curl -sS https://getcomposer.org/installer | php
+          sudo mv composer.phar /usr/local/bin/composer
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      # PHPStan
+      - name: Run PHPStan
+        run: |
+          if [ ! -f phpstan.neon ]; then
+            ./vendor/bin/phpstan analyse src --level=max
+          else
+            ./vendor/bin/phpstan analyse
+          fi
+
+      # PHP-CS-Fixer
+      - name: Run PHP-CS-Fixer
+        run: |
+          ./vendor/bin/php-cs-fixer fix --dry-run --diff
+
+      # PHP_CodeSniffer
+      - name: Run PHP_CodeSniffer (PHPCS)
+        run: |
+          ./vendor/bin/phpcs --standard=PSR12 src
