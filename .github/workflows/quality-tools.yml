@@ -42,9 +42,7 @@ jobs:
             phpstan analyse src --level=max || true
           else
             phpstan analyse || true
-          fi
-
-      
+          fi      
 
       # PHP-CS-Fixer com relatório HTML
       - name: Run PHP-CS-Fixer and generate report
@@ -54,14 +52,9 @@ jobs:
           --dry-run \
           --diff \
           --format=html \
-          --rules='@PSR12,array_syntax=>{"syntax":"short"},no_unused_imports,ordered_imports' \
-          > reports/php-cs-fixer-report.html || true
+          --rules='@PSR12,array_syntax=>{"syntax":"short"},no_unused_imports,ordered_imports' 
 
-      - name: Upload PHP-CS-Fixer HTML Report
-        uses: actions/upload-artifact@v3
-        with:
-          name: php-cs-fixer-report
-          path: reports/php-cs-fixer-report.html
+      
 
       # PHP_CodeSniffer
       - name: Run PHP_CodeSniffer (PHPCS)
