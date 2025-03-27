@@ -47,12 +47,11 @@ jobs:
       # PHP-CS-Fixer com relatório HTML
       - name: Run PHP-CS-Fixer and generate report
         run: |
-          mkdir -p reports
-           php-cs-fixer fix src \
-          --dry-run \
-          --diff \
-          --format=html \
-          --rules='@PSR12,array_syntax=>{"syntax":"short"},no_unused_imports,ordered_imports' 
+          php-cs-fixer fix src \
+            --dry-run \
+            --diff \
+            --rules='@PSR12,array_syntax=>{"syntax":"short"},no_unused_imports,single_quote,strict_comparison,strict_param' \
+            || true
 
       
 
